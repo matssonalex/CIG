@@ -82,7 +82,7 @@ print(mod.generator.summary())
 
 print(mod.discriminator.summary())
 
-im = Image.open('cropped_raw\im_00_0.tif')
+im = Image.open("cropped_raw/im_00_0.tif")
 im = np.asarray(im)
 im = np.reshape(im, (1, 256, 256, 1))
 
