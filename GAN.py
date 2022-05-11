@@ -1,5 +1,6 @@
 import numpy as np
 import tensorflow as tf
+import tensorflow_addons as tfa
 layers = tf.keras.layers
 
 
@@ -13,6 +14,9 @@ class GAN(tf.keras.Model):
         self.generator.compile(optimizer=tf.keras.optimizers.Adam(),
                   loss="sparse_categorical_crossentropy",
                   metrics="accuracy")   # TODO CHANGE
+
+        self.discriminator = self.create_discriminator((256,256,1))
+
      
 
     # def double_conv_block(self, x, n_filters):
@@ -86,9 +90,36 @@ class GAN(tf.keras.Model):
         model = tf.keras.Model(input, output)
         return model
    
-
+    def create_discriminator(self, input_shape):
+        discriminator = tf.keras.Sequential([
+            layers.Input(shape=input_shape),
+            layers.Conv2D(16, kernel_size=(4,4), strides=2),
+            tfa.layers.InstanceNormalization(),
+            layers.LeakyReLU(),
+            layers.Conv2D(32, kernel_size=(4,4), strides=2),
+            tfa.layers.InstanceNormalization(),
+            layers.LeakyReLU(),
+            layers.Conv2D(64, kernel_size=(4,4), strides=2),
+            tfa.layers.InstanceNormalization(),
+            layers.LeakyReLU(),
+            layers.Conv2D(128, kernel_size=(4,4), strides=2),
+            tfa.layers.InstanceNormalization(),
+            layers.LeakyReLU(),
+            layers.Conv2D(256, kernel_size=(4,4), strides=2),
+            tfa.layers.InstanceNormalization(),
+            layers.LeakyReLU(),
+            layers.Conv2D(512, kernel_size=(4,4), strides=2),
+            tfa.layers.InstanceNormalization(),
+            layers.LeakyReLU(),
+        ])
+        return discriminator
 
 
 mod = GAN()
 print(mod.generator.summary())
+
+print(mod.discriminator.summary())
+
+
+
 
