@@ -1,6 +1,8 @@
 import numpy as np
 import tensorflow as tf
 import tensorflow_addons as tfa
+from PIL import Image
+import matplotlib.pyplot as plt
 layers = tf.keras.layers
 
 
@@ -52,24 +54,25 @@ class GAN(tf.keras.Model):
     def create_discriminator(self, input_shape):
         discriminator = tf.keras.Sequential([
             layers.Input(shape=input_shape),
-            layers.Conv2D(16, kernel_size=(4,4), strides=2),
+            layers.Conv2D(16, kernel_size=(4,4), strides=2, padding='same'),
             tfa.layers.InstanceNormalization(),
             layers.LeakyReLU(),
-            layers.Conv2D(32, kernel_size=(4,4), strides=2),
+            layers.Conv2D(32, kernel_size=(4,4), strides=2, padding='same'),
             tfa.layers.InstanceNormalization(),
             layers.LeakyReLU(),
-            layers.Conv2D(64, kernel_size=(4,4), strides=2),
+            layers.Conv2D(64, kernel_size=(4,4), strides=2, padding='same'),
             tfa.layers.InstanceNormalization(),
             layers.LeakyReLU(),
-            layers.Conv2D(128, kernel_size=(4,4), strides=2),
+            layers.Conv2D(128, kernel_size=(4,4), strides=2, padding='same'),
             tfa.layers.InstanceNormalization(),
             layers.LeakyReLU(),
-            layers.Conv2D(256, kernel_size=(4,4), strides=2),
+            layers.Conv2D(256, kernel_size=(4,4), strides=2, padding='same'),
             tfa.layers.InstanceNormalization(),
             layers.LeakyReLU(),
-            layers.Conv2D(512, kernel_size=(4,4), strides=2),
+            layers.Conv2D(512, kernel_size=(4,4), strides=2, padding='same'),
             tfa.layers.InstanceNormalization(),
             layers.LeakyReLU(),
+            layers.Dense(1, activation='sigmoid') # Ska denna finnas? Fattar ej
         ])
         return discriminator
 
@@ -78,6 +81,16 @@ mod = GAN()
 print(mod.generator.summary())
 
 print(mod.discriminator.summary())
+
+im = Image.open('cropped_raw\im_00_0.tif')
+im = np.asarray(im)
+im = np.reshape(im, (1, 256, 256, 1))
+
+im = mod.discriminator(im).numpy()
+print(im.shape)
+print(im)
+#im = Image.fromarray(im)
+#im.show()
 
 
 
