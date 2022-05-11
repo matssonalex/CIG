@@ -46,7 +46,7 @@ class GAN(tf.keras.Model):
             x = layers.Conv2D(n_filters, kernel_size=3, strides=1, padding='same', activation='relu')(x)
 
 
-        output = layers.Conv2D(16, kernel_size=1, padding="same", activation = "softmax")(x) #check activation here
+        output = layers.Conv2D(16, kernel_size=1, padding="same", activation = "tanh")(x) #check activation here
         
         model = tf.keras.Model(input, output)
         return model
