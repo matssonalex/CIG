@@ -52,7 +52,7 @@ class GAN(tf.keras.Model):
             skip_vec.append(x)
             x = layers.MaxPool2D(2)(x)
 
-        x = layers.Conv2D(1024, kernel_size=3, strides=1, padding='same', activation='relu')(x)
+        x = layers.Conv2D(1024, kernel_size=3, strides=1, padding='same', activation='relu')(x) # TODO RESNET?
         x = layers.Conv2D(1024, kernel_size=3, strides=1, padding='same', activation='relu')(x)
 
         for ind, n_filters in enumerate(filters[::-1]):
@@ -86,8 +86,6 @@ class GAN(tf.keras.Model):
         model = tf.keras.Model(input, output)
         return model
    
-
-
 
 mod = GAN()
 print(mod.generator.summary())
