@@ -20,20 +20,20 @@ def loader(nr_of_images, nr_of_cropped, rout, counter, format, matrix):
             matrix[counter, :, :] = np_label
             counter += 1
 # For the labels
-rout = '/Users/Nisse/Documents/Chalmers/MPCAS/AdvNN/CIG/cropped_labels/im_'
+rout = 'cropped_labels/im_'
 loader(nr_of_images, nr_of_cropped, rout, 0, format, label_matrix)
-rout = '/Users/Nisse/Documents/Chalmers/MPCAS/AdvNN/CIG/flipped_labels/flipped_im_'
+rout = 'flipped_labels/flipped_im_'
 loader(nr_of_images, nr_of_cropped, rout, 320, format, label_matrix)
-rout = '/Users/Nisse/Documents/Chalmers/MPCAS/AdvNN/CIG/noisy_labels/noisy_im_'
+rout = 'noisy_labels/noisy_im_'
 loader(nr_of_images, nr_of_cropped, rout, 640, format, label_matrix)
 
 # For the raw files
 format = '.tif'
-rout = '/Users/Nisse/Documents/Chalmers/MPCAS/AdvNN/CIG/cropped_raw/im_'
+rout = 'cropped_raw/im_'
 loader(nr_of_images, nr_of_cropped, rout, 0, format, raw_matrix)
-rout = '/Users/Nisse/Documents/Chalmers/MPCAS/AdvNN/CIG/flipped_raw/flipped_im_'
+rout = 'flipped_raw/flipped_im_'
 loader(nr_of_images, nr_of_cropped, rout, 320, format, raw_matrix)
-rout = '/Users/Nisse/Documents/Chalmers/MPCAS/AdvNN/CIG/cropped_raw/im_'
+rout = 'cropped_raw/im_'
 loader(nr_of_images, nr_of_cropped, rout, 640, format, raw_matrix)
 
 np.save('label_images.npy', label_matrix)

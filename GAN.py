@@ -12,11 +12,19 @@ class GAN(tf.keras.Model):
         
         self.generator = self.create_generator(input_dim, input_channels)    
 
-        self.generator.compile(optimizer=tf.keras.optimizers.Adam(),
-                  loss="sparse_categorical_crossentropy",
-                  metrics="accuracy")   # TODO CHANGE
+        self.generator.compile(
+            optimizer='adam', 
+            loss='mean_absolute_error', 
+            metrics=['mean_absolute_error']
+            ) 
 
         self.discriminator = self.create_discriminator((256,256,1))
+        self.disc_loss = 0
+        self.discriminator.compile(
+            optimizer='adam', 
+            loss='mean_absolute_error', 
+            metrics=['mean_absolute_error']
+            )   # oklart om dessa saker behöver vara här
 
 
     def training_step(self, data):
@@ -24,15 +32,28 @@ class GAN(tf.keras.Model):
 
         # data borde här innehålla en batch av masks (x) or riktiga bilder/raw images (y)
         x, y = data
-        generated_images = self.generator(x)    # batch av fake bilder
         batch_size = len(x)
+        generated_images = self.generator(x)    # batch av fake bilder
+        generated_images = np.reshape(generated_images, (batch_size, 256, 256))
+        
         valid = tf.ones(batch_size)
-        fake = tf.zeros(batch_size)
+        #fake = tf.zeros(batch_size)
         # först tränar vi discriminator sen hela paketet
         with tf.GradientTape() as tape:     # används för att typ hålla koll på gradients enkelt och träna de som ska tränas.
-            pass                            # ibland ska vikterna för discriminatorn låsas tror jag.
+            pred_real_images = self.discriminator(y)
+            pred_fake_images = self.discriminator(generated_images)
+
+            self.disc_loss = pred_fake_images**2 + (1 - pred_real_images)**2
+
+        #print(self.disc_loss)    
+        gradients = tape.gradient(self.disc_loss, self.discriminator.trainable_weights)
+        self.discriminator.optimizer.apply_gradients(
+            zip(gradients, self.discriminator.trainable_weights)
+            )
+        #print(self.discriminator.trainable_weights[0][0][0])    
+            # ibland ska vikterna för discriminatorn låsas tror jag.
             # predicted_real_images = self.discriminator([y, x])    # ska vara 1/0 vektor för predictions av real images
-            # predicted_fake_images = self.discriminator([y, generated_images])     # samma fast för fake images
+            # predicted_fake_images = self.discriminator([generated_images, x])     # samma fast för fake images
             # beräkna loss på något sätt: loss(predicted_real_images - valid) + loss(predicted_fake_images - fake)
 
         # nu kan vi använda tape att beräkna gradients
@@ -73,7 +94,7 @@ class GAN(tf.keras.Model):
             x = layers.Conv2D(n_filters, kernel_size=3, strides=1, padding='same', activation='relu')(x)
 
 
-        output = layers.Conv2D(16, kernel_size=1, padding="same", activation = "tanh")(x) #check activation here
+        output = layers.Conv2D(1, kernel_size=1, padding="same", activation = "tanh")(x) #check activation here
         
         model = tf.keras.Model(input, output)
         return model
