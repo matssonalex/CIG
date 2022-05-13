@@ -6,7 +6,7 @@ from PIL import Image
 import matplotlib.pyplot as plt
 from sklearn.metrics import mean_absolute_error as mae
 layers = tf.keras.layers
-
+#from keras.utils import plot_model
 
 class GAN(tf.keras.Model):
     def __init__(self, input_dim=256, input_channels=1, ):
@@ -32,6 +32,7 @@ class GAN(tf.keras.Model):
         # slå ihop model till en
         input_shape = self.generator.input
         image = self.generator(input_shape)
+        # self.discriminator.trainable = False
 
 
         validity = self.discriminator(layers.concatenate([image, input_shape]))
@@ -64,9 +65,7 @@ class GAN(tf.keras.Model):
         generated_images = self.generator(x_batch)    # batch av fake bilder
         generated_images = np.reshape(generated_images, (batch_size, 256, 256, 1))
         
-        valid = tf.ones(batch_size)
-        #fake = tf.zeros(batch_size)
-        # först tränar vi discriminator sen hela paketet
+       
         with tf.GradientTape() as tape:     # används för att typ hålla koll på gradients enkelt och träna de som ska tränas.
             pred_real_images = self.discriminator(layers.concatenate([y_batch, x_batch]))
             pred_fake_images = self.discriminator(layers.concatenate([generated_images, x_batch]))
@@ -80,7 +79,7 @@ class GAN(tf.keras.Model):
             )
         
         
-        
+        # self.generator.build((256,256,1))
         with tf.GradientTape() as tape:
             output_validity, output_images = self.full_model(x_batch)   # if batch is 10 images, then output will be 10 numbers and 10 generated images
             
@@ -89,43 +88,25 @@ class GAN(tf.keras.Model):
             raw_reshaped = raw_reshaped / 1.0
             out_img_reshaped = raw_reshaped / 1.0
 
-            MAE = np.array([mae(out_img_reshaped[i], raw_reshaped[i]) for i in range(batch_size)])
-            #MAE = np.array([(1/65536) * sum(abs(out_img_reshaped[i,:] - raw_reshaped[i,:])) for i in range(batch_size)])
-            self.gan_loss = 0.8 * np.reshape(MAE, (10,1)) + (1 - pred_fake_images)**2
-        
-        #self.discriminator.traniable = False
+            mean_abs_err = np.array([mae(out_img_reshaped[i], raw_reshaped[i]) for i in range(batch_size)], dtype=np.float32)
+            
+            self.gan_loss = 0.8 * tf.reshape(mean_abs_err, (10,1)) + (1 - pred_fake_images)**2
+ 
         gradients = tape.gradient(self.gan_loss, self.full_model.trainable_weights)
         self.full_model.optimizer.apply_gradients(
             zip(gradients, self.full_model.trainable_weights)
             )
             
 
-        
-        #print(self.discriminator.trainable_weights[0][0][0])    
-            # ibland ska vikterna för discriminatorn låsas tror jag.
-            # predicted_real_images = self.discriminator([y, x])    # ska vara 1/0 vektor för predictions av real images
-            # predicted_fake_images = self.discriminator([generated_images, x])     # samma fast för fake images
-            # beräkna loss på något sätt: loss(predicted_real_images - valid) + loss(predicted_fake_images - fake)
-
-        # nu kan vi använda tape att beräkna gradients
-        # gradients = tape.gradient(loss, trainiable weights av discriminator)
-        # använd discriminatorns optimizer för att uppdatera vikter mha gradients
-        
-        # implementera liknade fast för hela paketet, behövs:
-        #   - från totala modellen behöver vi kunna få 1/0 av disc och den genererade bilden från gen
-        #   - kopierar upp genererade bilderna massa gånger, varför?
-        #   - kopierar upp riktiga bilderna massa gånger, varför?
-        # använder sen dessa kopior av massa bilder för att beräkna den totala förlusten av hela paketet
-        # sen gradients mha av tape och optimizer steget
-
-    def call(self, input, training=None, mask=None):
+    def call(self, *args, **kwargs):
+        return self.generator.call(*args, **kwargs)
         #gen_img = self.generator(input)
         #print(np.shape(input))
         #print(np.shape(gen_img))
        # disc_input = layers.concatenate([tf.reshape(input, (256,256,1)), gen_img])
         #out = self.discriminator(disc_input)
         #eturn out
-        pass
+        
 
     # def call(self, inputs, training=None, mask=None): # TODO
     #     gen_img = self.generator(input)
@@ -187,21 +168,6 @@ class GAN(tf.keras.Model):
         ])
         return discriminator
 
-
-# mod = GAN()
-# print(mod.generator.summary())
-
-# print(mod.discriminator.summary())
-
-# im = Image.open("cropped_raw/im_00_0.tif")
-# im = np.asarray(im)
-# im = np.reshape(im, (1, 256, 256, 1))
-
-# im = mod.discriminator(im).numpy()
-# print(im.shape)
-# print(im)
-#im = Image.fromarray(im)
-#im.show()
 
 
 
