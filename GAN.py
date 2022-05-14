@@ -42,7 +42,8 @@ class GAN(tf.keras.Model):
 
         self.full_model.compile(
             optimizer='adam',
-            loss='mean_absolute_error'
+            loss='mean_absolute_error',
+            metrics=['mean_absolute_error']
         )
 
     def cutom_loss(self, pred_fake, generated_imgs, true_imgs):
@@ -57,13 +58,13 @@ class GAN(tf.keras.Model):
         #self.discriminator.traniable = True
         # data borde här innehålla en batch av masks (x) or riktiga bilder/raw images (y)
         x_batch, y_batch = data
-        batch_size = len(x_batch)
+        batch_size = 10
         
         x_batch = tf.reshape(x_batch, (batch_size, 256, 256, 1))    # borde kanske göras utanför?
         y_batch = tf.reshape(y_batch, (batch_size, 256, 256, 1))
         
         generated_images = self.generator(x_batch)    # batch av fake bilder
-        generated_images = np.reshape(generated_images, (batch_size, 256, 256, 1))
+        generated_images = tf.reshape(generated_images, (batch_size, 256, 256, 1))
         
        
         with tf.GradientTape() as tape:     # används för att typ hålla koll på gradients enkelt och träna de som ska tränas.
@@ -77,19 +78,23 @@ class GAN(tf.keras.Model):
         self.discriminator.optimizer.apply_gradients(
             zip(gradients, self.discriminator.trainable_weights)
             )
-        
+       
         
         # self.generator.build((256,256,1))
         with tf.GradientTape() as tape:
-            output_validity, output_images = self.full_model(x_batch)   # if batch is 10 images, then output will be 10 numbers and 10 generated images
-            
+            # this doesn't work. Have tried a lot of different approaches...
+
+            # output_images = self.generator(x_batch)
+            # output_validity, output_images = self.full_model(x_batch)  # if batch is 10 images, then output will be 10 numbers and 10 generated images
+            output_validity, output_images = self.full_model(x_batch)
             raw_reshaped = tf.reshape(y_batch, (batch_size, 256*256))
             out_img_reshaped = tf.reshape(output_images, (batch_size, 256*256))
             raw_reshaped = raw_reshaped / 1.0
             out_img_reshaped = raw_reshaped / 1.0
 
-            mean_abs_err = np.array([mae(out_img_reshaped[i], raw_reshaped[i]) for i in range(batch_size)], dtype=np.float32)
-            
+            mean_abs_err = tf.convert_to_tensor([mae(out_img_reshaped[i], raw_reshaped[i]) for i in range(batch_size)], dtype=np.float32)
+
+            # loss = tf.ones(10,1)    
             self.gan_loss = 0.8 * tf.reshape(mean_abs_err, (10,1)) + (1 - pred_fake_images)**2
  
         gradients = tape.gradient(self.gan_loss, self.full_model.trainable_weights)
@@ -98,9 +103,11 @@ class GAN(tf.keras.Model):
             )
             
 
-    def call(self, *args, **kwargs):
-        return self.generator.call(*args, **kwargs)
-        #gen_img = self.generator(input)
+    def call(self, input,*args, **kwargs):
+        #return self.generator.call(*args, **kwargs)
+        gen_img = self.generator.call(input)
+        out = self.discriminator.call(layers.concatenate([input, gen_img]))
+        return out, gen_img
         #print(np.shape(input))
         #print(np.shape(gen_img))
        # disc_input = layers.concatenate([tf.reshape(input, (256,256,1)), gen_img])
@@ -140,7 +147,8 @@ class GAN(tf.keras.Model):
         
         model = tf.keras.Model(input, output)
         return model
-   
+      
+
     def create_discriminator(self, input_shape):
         # kanske lägga till alpha=0.2 i varje leaky-relu
         discriminator = tf.keras.Sequential([
