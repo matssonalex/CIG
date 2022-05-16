@@ -16,17 +16,12 @@ class GAN(tf.keras.Model):
         self.discriminator = self.create_discriminator((256,256,2))
         self.disc_loss = 0
        
-    def compile(self, d_optimizer, g_optimizer, loss_fn):
+    def compile(self, d_optimizer, g_optimizer, loss_fn_d, loss_fn_g):
         super(GAN, self).compile()
         self.d_optimizer = d_optimizer
         self.g_optimizer = g_optimizer
-        self.loss_fn = loss_fn    
-
-    def custom_loss(self, pred_fake, generated_imgs, true_imgs):
-        gamma = 0.8
-        # är det mean absolute error mellan raw image och generead image av generator?
-        loss = gamma * mae(true_imgs, generated_imgs) + (1 - pred_fake)**2
-        return loss
+        self.loss_fn_d = loss_fn_d
+        self.loss_fn_g = loss_fn_g    
 
 
     def train_step(self, data):
@@ -42,14 +37,12 @@ class GAN(tf.keras.Model):
         generated_images = self.generator(x_batch)    # batch av fake bilder
         generated_images = tf.reshape(generated_images, (batch_size, 256, 256, 1))
         
-       
+        # 
         with tf.GradientTape() as tape:     # används för att typ hålla koll på gradients enkelt och träna de som ska tränas.
             pred_real_images = self.discriminator(layers.concatenate([y_batch, x_batch]))
             pred_fake_images = self.discriminator(layers.concatenate([generated_images, x_batch]))
-
-            self.disc_loss = pred_fake_images**2 + (1 - pred_real_images)**2
             
-            d_loss = self.loss_fn(pred_real_images, pred_fake_images)
+            d_loss = self.loss_fn_d(pred_real_images, pred_fake_images)
 
    
         gradients = tape.gradient(d_loss, self.discriminator.trainable_weights)
@@ -57,7 +50,7 @@ class GAN(tf.keras.Model):
             zip(gradients, self.discriminator.trainable_weights)
             )
        
-    
+        # train generator
         with tf.GradientTape() as tape:
             # this doesn't work. Have tried a lot of different approaches...
 
@@ -65,19 +58,12 @@ class GAN(tf.keras.Model):
 
             preds = self.discriminator(layers.concatenate([output_images, x_batch]))
 
-
             raw_reshaped = tf.reshape(y_batch, (batch_size, 256*256))
             out_img_reshaped = tf.reshape(output_images, (batch_size, 256*256))
             raw_reshaped = raw_reshaped / 1.0
             out_img_reshaped = raw_reshaped / 1.0
 
-            mean_abs_err = tf.convert_to_tensor([mae(out_img_reshaped[i], raw_reshaped[i]) for i in range(batch_size)], dtype=np.float32)
-
-            # # loss = tf.ones(10,1)    
-            # self.gan_loss = 0.8 * tf.reshape(mean_abs_err, (10,1)) + (1 - pred_fake_images)**2
-            
-            missleading = tf.zeros((batch_size, 1)) # TODO change
-            g_loss = self.loss_fn(missleading, preds)
+            g_loss = self.loss_fn_g(raw_reshaped, out_img_reshaped, preds)
  
         gradients = tape.gradient(g_loss, self.generator.trainable_weights)
         self.g_optimizer.apply_gradients(
