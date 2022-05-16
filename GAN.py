@@ -9,7 +9,7 @@ layers = tf.keras.layers
 #from keras.utils import plot_model
 
 class GAN(tf.keras.Model):
-    def __init__(self, input_dim=256, input_channels=1, ):
+    def __init__(self, input_dim=256, input_channels=1):
         super(GAN, self).__init__()
         
         self.generator = self.create_generator(input_dim, input_channels)    
@@ -69,9 +69,18 @@ class GAN(tf.keras.Model):
         self.g_optimizer.apply_gradients(
             zip(gradients, self.generator.trainable_weights)
             )
+
+        return {"d_loss": d_loss, "g_loss": g_loss}
             
 
-    def call(self, input,*args, **kwargs):
+    def call(self, input):
+        input = tf.expand_dims(input, -1)
+        input_shape = np.shape(input)
+        if len(input_shape) == 3:
+            input = tf.reshape(input, (1, 256, 256, 1))
+        else:
+            input = tf.reshape(input, (input_shape[0], 256, 256, 1))
+        
         gen_img = self.generator.call(input)
         out = self.discriminator.call(layers.concatenate([input, gen_img]))
         return out, gen_img

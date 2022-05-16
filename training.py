@@ -1,3 +1,4 @@
+from cProfile import label
 from GAN import GAN
 import numpy as np
 from matplotlib import pyplot as plt
@@ -17,14 +18,25 @@ def train_GAN(model, batch_size, n_epochs):
 
         indexes = np.random.randint(0, n_images, (batch_size))
         data = [label_img[indexes], raw_img[indexes]]
-        model.train_step(data)
+        loss = model.train_step(data)
+        d_loss = loss['d_loss']
+        g_loss = loss['g_loss']
+        # print('hej')
+        #d_loss
+        print(f'discriminator loss: {d_loss.numpy()}')
+        print(f'generator loss: {g_loss.numpy()}')
+
+        # test_picture = label_img[0]
+        #a, b = model.predict(test_picture)
+        # plt.imshow(tf.reshape(b[0], (256,256)))
+        # plt.show()
 
 
 def loss_fn_gen(z_label, z_output, pred_fake):
     gamma = 0.8
     mean_abs_err = tf.convert_to_tensor([mae(z_output[i], z_label[i]) for i in range(10)], dtype=np.float32)
 
-    return gamma*mean_abs_err + (1 - pred_fake**2)
+    return gamma*tf.reshape(mean_abs_err, (10,1)) + (1 - pred_fake**2)
 
 
 def loss_fn_disc(pred_real, pred_fake):
@@ -40,5 +52,6 @@ if __name__ == '__main__':
     loss_fn_d=loss_fn_disc
 )
     train_GAN(gan, 10, 10)
+
 
     
