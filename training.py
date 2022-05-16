@@ -13,19 +13,23 @@ def train_GAN(model, batch_size, n_epochs):
     n_images = len(label_img)
     for i in range(n_epochs):
         #for j in range(int(n_images/batch_size))
-        #model.predict(np.reshape(label_img[0:10])
+
         indexes = np.random.randint(0, n_images, (batch_size))
         data = [label_img[indexes], raw_img[indexes]]
-        #model.full_model.fit(data)
         model.train_step(data)
         print(f'total discriminator loss: {sum(model.disc_loss)[0]}')
-        print(f'total GAN loss: {sum(model.gan_loss)[0]}')
+        print(f'total generator loss: {sum(model.gan_loss)[0]}')
 
 def loss_fn():
     pass
 
 if __name__ == '__main__':
     gan = GAN()
+    gan.compile(
+    d_optimizer=tf.keras.optimizers.Adam(learning_rate=0.0003),
+    g_optimizer=tf.keras.optimizers.Adam(learning_rate=0.0003),
+    loss_fn=tf.keras.losses.BinaryCrossentropy(from_logits=True),
+)
     train_GAN(gan, 10, 10)
 
     
