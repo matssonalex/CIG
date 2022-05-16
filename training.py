@@ -9,7 +9,7 @@ from sklearn.metrics import mean_absolute_error as mae
 def train_GAN(model, x, y, batch_size, n_epochs):
 #     # hittils endast discriminator som tränas när man kör model.training_step(
 
-    model.fit(x[:100], y[:100], batch_size=batch_size, epochs=n_epochs)
+    model.fit(x, y, batch_size=batch_size, epochs=n_epochs)
 
 
 def test_GAN(model, x, y, ind):
@@ -58,7 +58,7 @@ if __name__ == '__main__':
     ind = np.random.randint(960)
 
     test_GAN(gan, label_img, raw_img, ind)
-    train_GAN(gan, label_img, raw_img, 10, 50)
+    train_GAN(gan, label_img, raw_img, 96, 100)
     test_GAN(gan, label_img, raw_img, ind)
     print('hello')
     plt.show()

@@ -28,8 +28,11 @@ class GAN(tf.keras.Model):
         # inspirerat av https://github.com/softmatterlab/DeepTrack-2.0/blob/develop/deeptrack/models/gans/cgan.py
         # data borde här innehålla en batch av masks (x) or riktiga bilder/raw images (y)
         x_batch, y_batch = data
-        batch_size = tf.shape(x_batch)[0]
-        
+        batch_size = np.shape(x_batch)[0]
+        if batch_size is None:
+            x_batch = tf.reshape(x_batch, (1, 256, 256, 1))    # borde kanske göras utanför?
+            y_batch = tf.reshape(y_batch, (1, 256, 256, 1))
+
         x_batch = tf.reshape(x_batch, (batch_size, 256, 256, 1))    # borde kanske göras utanför?
         y_batch = tf.reshape(y_batch, (batch_size, 256, 256, 1))
         
