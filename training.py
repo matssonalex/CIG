@@ -1,4 +1,5 @@
 from cProfile import label
+from curses import raw
 from GAN import GAN
 import numpy as np
 from matplotlib import pyplot as plt
@@ -7,37 +8,37 @@ import tensorflow as tf
 import loader   # this will create "label_images.npy" and "raw_images.py"
 from sklearn.metrics import mean_absolute_error as mae
 
-def train_GAN(model, batch_size, n_epochs):
-#     # hittils endast discriminator som tränas när man kör model.training_step()
-    label_img = np.load('label_images.npy')
-    raw_img = np.load('raw_images.npy')
+def train_GAN(model, x, y, batch_size, n_epochs):
+#     # hittils endast discriminator som tränas när man kör model.training_step(
 
-#     n_images = len(label_img)
-#     for i in range(n_epochs):
-#         #for j in range(int(n_images/batch_size))
+    model.fit(x[:100], y[:100], batch_size=batch_size, epochs=n_epochs)
 
-#         indexes = np.random.randint(0, n_images, (batch_size))
-    model.fit(label_img, raw_img, batch_size=10)
 
-    #data = [label_img[indexes], raw_img[indexes]]
-#         loss = model.train_step(data)
-#         d_loss = loss['d_loss']
-#         g_loss = loss['g_loss']
-#         # print('hej')
-#         #d_loss
-#         print(f'discriminator loss: {d_loss.numpy()}')
-#         print(f'generator loss: {g_loss.numpy()}')
+def test_GAN(model, x, y, ind):
+    model.trainable = False
+    
 
-        # test_picture = label_img[0]
-        #a, b = model.predict(test_picture)
-        # plt.imshow(tf.reshape(b[0], (256,256)))
-        # plt.show()
+    validity, image = model(x[ind])
+    
+    plt.figure()
+    plt.subplot(1,3,1)
+    plt.imshow(np.reshape(x[ind], (256,256)))
+    plt.title('Mask')
+    plt.subplot(1,3,2)
+    plt.imshow(np.reshape(image, (256,256)))
+    plt.title('Generated')
+    plt.subplot(1,3,3)
+    plt.imshow(np.reshape(y[ind], (256,256)))
+    plt.title('Ground truth')
+    
+
 
 
 def loss_fn_gen(z_label, z_output, pred_fake):
     gamma = 0.8
+    #hello = mean()
     mean_abs_err = tf.keras.losses.mean_absolute_error(z_label, z_output)
-    return gamma*tf.reshape(mean_abs_err, (10,1)) + (1 - pred_fake**2)
+    return gamma*tf.reshape(mean_abs_err, (np.shape(z_label)[0],1)) + (1 - pred_fake)**2
 
 
 def loss_fn_disc(pred_real, pred_fake):
@@ -47,12 +48,24 @@ def loss_fn_disc(pred_real, pred_fake):
 if __name__ == '__main__':
     gan = GAN()
     gan.compile(
-    d_optimizer=tf.keras.optimizers.Adam(learning_rate=0.0003),
-    g_optimizer=tf.keras.optimizers.Adam(learning_rate=0.0003),
+    d_optimizer=tf.keras.optimizers.Adam(learning_rate=0.0003, beta_1=0.5),
+    g_optimizer=tf.keras.optimizers.Adam(learning_rate=0.0003, beta_1=0.5),
     loss_fn_g=loss_fn_gen,
     loss_fn_d=loss_fn_disc
     )
-    train_GAN(gan, 10, 10)
+    
+    # get training data
+    label_img = np.load('label_images.npy')
+    raw_img = np.load('raw_images.npy')
+
+    ind = np.random.randint(960)
+
+    test_GAN(gan, label_img, raw_img, ind)
+    train_GAN(gan, label_img, raw_img, 10, 50)
+    test_GAN(gan, label_img, raw_img, ind)
+    print('hello')
+    plt.show()
+
 
 
     

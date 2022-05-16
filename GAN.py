@@ -28,13 +28,13 @@ class GAN(tf.keras.Model):
         # inspirerat av https://github.com/softmatterlab/DeepTrack-2.0/blob/develop/deeptrack/models/gans/cgan.py
         # data borde här innehålla en batch av masks (x) or riktiga bilder/raw images (y)
         x_batch, y_batch = data
-        batch_size = 10
+        batch_size = np.shape(x_batch)[0]
         
-        x_batch = tf.reshape(x_batch, (batch_size, 256, 256, 1))    # borde kanske göras utanför?
-        y_batch = tf.reshape(y_batch, (batch_size, 256, 256, 1))
+        x_batch = np.reshape(x_batch, (batch_size, 256, 256, 1))    # borde kanske göras utanför?
+        y_batch = np.reshape(y_batch, (batch_size, 256, 256, 1))
         
         generated_images = self.generator(x_batch)    # batch av fake bilder
-        generated_images = tf.reshape(generated_images, (batch_size, 256, 256, 1))
+        generated_images = np.reshape(generated_images, (batch_size, 256, 256, 1))
         
         # 
         with tf.GradientTape() as tape:     # används för att typ hålla koll på gradients enkelt och träna de som ska tränas.
@@ -52,15 +52,14 @@ class GAN(tf.keras.Model):
         # train generator
         with tf.GradientTape() as tape:
             output_images = self.generator(x_batch)
+            pred_fake_images = self.discriminator(layers.concatenate([output_images, x_batch]))
 
-            preds = self.discriminator(layers.concatenate([output_images, x_batch]))
-
-            raw_reshaped = tf.reshape(y_batch, (batch_size, 256*256))
-            out_img_reshaped = tf.reshape(output_images, (batch_size, 256*256))
+            raw_reshaped = np.reshape(y_batch, (batch_size, 256*256))
+            out_img_reshaped = np.reshape(output_images, (batch_size, 256*256))
             raw_reshaped = raw_reshaped / 1.0
             out_img_reshaped = raw_reshaped / 1.0
 
-            g_loss = self.loss_fn_g(raw_reshaped, out_img_reshaped, preds)
+            g_loss = self.loss_fn_g(raw_reshaped, out_img_reshaped, pred_fake_images)
  
         gradients = tape.gradient(g_loss, self.generator.trainable_weights)
         self.g_optimizer.apply_gradients(
@@ -71,15 +70,15 @@ class GAN(tf.keras.Model):
             
 
     def call(self, input):
-        input = tf.expand_dims(input, -1)
+        input = np.expand_dims(input, -1)
         input_shape = np.shape(input)
         if len(input_shape) == 3:
-            input = tf.reshape(input, (1, 256, 256, 1))
+            input = np.reshape(input, (1, 256, 256, 1))
         else:
-            input = tf.reshape(input, (input_shape[0], 256, 256, 1))
+            input = np.reshape(input, (input_shape[0], 256, 256, 1))
         
-        gen_img = self.generator.call(input)
-        out = self.discriminator.call(layers.concatenate([input, gen_img]))
+        gen_img = self.generator(input)
+        out = self.discriminator(layers.concatenate([input, gen_img]))
         return out, gen_img     # validity between 0-1 and the generated image
        
 
