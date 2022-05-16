@@ -14,7 +14,7 @@ class GAN(tf.keras.Model):
         
         self.generator = self.create_generator(input_dim, input_channels)    
         self.discriminator = self.create_discriminator((256,256,2))
-        self.disc_loss = 0
+        
        
     def compile(self, d_optimizer, g_optimizer, loss_fn_d, loss_fn_g):
         super(GAN, self).compile()
@@ -26,7 +26,6 @@ class GAN(tf.keras.Model):
 
     def train_step(self, data):
         # inspirerat av https://github.com/softmatterlab/DeepTrack-2.0/blob/develop/deeptrack/models/gans/cgan.py
-        #self.discriminator.traniable = True
         # data borde här innehålla en batch av masks (x) or riktiga bilder/raw images (y)
         x_batch, y_batch = data
         batch_size = 10
@@ -52,8 +51,6 @@ class GAN(tf.keras.Model):
        
         # train generator
         with tf.GradientTape() as tape:
-            # this doesn't work. Have tried a lot of different approaches...
-
             output_images = self.generator(x_batch)
 
             preds = self.discriminator(layers.concatenate([output_images, x_batch]))
@@ -83,7 +80,7 @@ class GAN(tf.keras.Model):
         
         gen_img = self.generator.call(input)
         out = self.discriminator.call(layers.concatenate([input, gen_img]))
-        return out, gen_img
+        return out, gen_img     # validity between 0-1 and the generated image
        
 
     def create_generator(self, input_dim, input_channels):
