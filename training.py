@@ -1,5 +1,3 @@
-from cProfile import label
-from curses import raw
 from GAN import GAN
 import numpy as np
 from matplotlib import pyplot as plt
@@ -36,7 +34,6 @@ def test_GAN(model, x, y, ind):
 
 def loss_fn_gen(z_label, z_output, pred_fake):
     gamma = 0.8
-    #hello = mean()
     mean_abs_err = tf.keras.losses.mean_absolute_error(z_label, z_output)
     return gamma*tf.reshape(mean_abs_err, (np.shape(z_label)[0],1)) + (1 - pred_fake)**2
 
