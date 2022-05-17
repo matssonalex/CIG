@@ -1,5 +1,3 @@
-from cProfile import label
-from curses import raw
 from GAN import GAN
 import numpy as np
 from matplotlib import pyplot as plt
