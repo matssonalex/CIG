@@ -24,7 +24,6 @@ class GAN(tf.keras.Model):
 
 
     def train_step(self, data):
-        # Normalize data between -1/1
         # inspirerat av https://github.com/softmatterlab/DeepTrack-2.0/blob/develop/deeptrack/models/gans/cgan.py
         # data borde här innehålla en batch av masks (x) or riktiga bilder/raw images (y)
         x_batch, y_batch = data
@@ -41,7 +40,7 @@ class GAN(tf.keras.Model):
         generated_images = self.generator(x_batch)    # batch av fake bilder
         generated_images = tf.reshape(generated_images, (batch_size, 256, 256, 1))
         
-        # 
+        # Här tränas discriminator, 
         self.discriminator.trainable = True
         with tf.GradientTape() as tape:     # används för att typ hålla koll på gradients enkelt och träna de som ska tränas.
             pred_real_images = self.discriminator(layers.concatenate([y_batch, x_batch]))
@@ -56,7 +55,7 @@ class GAN(tf.keras.Model):
             zip(gradients, self.discriminator.trainable_weights)
             )
        
-        # train generator
+        # train generator betydligt fler felkällor här tror jag. 
         self.generator.trainable = True
         self.discriminator.trainable = False
         
