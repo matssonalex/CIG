@@ -28,6 +28,7 @@ class GAN(tf.keras.Model):
         # inspirerat av https://github.com/softmatterlab/DeepTrack-2.0/blob/develop/deeptrack/models/gans/cgan.py
         # data borde här innehålla en batch av masks (x) or riktiga bilder/raw images (y)
         x_batch, y_batch = data
+
         batch_size = np.shape(x_batch)[0]
         if batch_size is None:
             x_batch = tf.reshape(x_batch, (1, 256, 256, 1))    # borde kanske göras utanför?
@@ -60,15 +61,16 @@ class GAN(tf.keras.Model):
         self.discriminator.trainable = False
         
         with tf.GradientTape() as tape:
-            output_images = self.generator(x_batch)
-            pred_fake_images = self.discriminator(layers.concatenate([output_images, x_batch]))
+            generated_images = self.generator(x_batch)
+            pred_real_images = self.discriminator(layers.concatenate([y_batch, x_batch]))
+            pred_fake_images = self.discriminator(layers.concatenate([generated_images, x_batch]))
 
             raw_reshaped = tf.reshape(y_batch, (batch_size, 256*256))
-            out_img_reshaped = tf.reshape(output_images, (batch_size, 256*256))
+            out_img_reshaped = tf.reshape(generated_images, (batch_size, 256*256))
             raw_reshaped = raw_reshaped / 1.0
             out_img_reshaped = raw_reshaped / 1.0
 
-            g_loss = self.loss_fn_g(raw_reshaped, out_img_reshaped, pred_fake_images)   # mae between first 2, mse CHaNGE
+            g_loss = self.loss_fn_g(raw_reshaped, out_img_reshaped, pred_fake_images, pred_real_images)   # mae between first 2, mse CHaNGE
  
         gradients = tape.gradient(g_loss, self.generator.trainable_weights)
         self.g_optimizer.apply_gradients(
@@ -141,9 +143,10 @@ class GAN(tf.keras.Model):
             layers.Conv2D(512, kernel_size=(4,4), strides=2, padding='same'),
             tfa.layers.InstanceNormalization(),
             layers.LeakyReLU(),
-            #layers.Conv2D(1, kernel_size=(4,4) )
-            layers.Flatten(),       # la till detta eftersom de hade det i deeptrack modellen, ger nu 1 tal som output
-            layers.Dense(1, activation='sigmoid')  # return a matrix with a 1-filter conv2d. Linear activation
+            layers.Conv2D(1, kernel_size=(4,4), strides=1, padding='same', activation='linear')
+            # layers.Linear()
+            # layers.Flatten(),       # la till detta eftersom de hade det i deeptrack modellen, ger nu 1 tal som output
+            # layers.Dense(1, activation='sigmoid')  # return a matrix with a 1-filter conv2d. Linear activation
         ])
         return discriminator
 
