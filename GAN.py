@@ -24,6 +24,7 @@ class GAN(tf.keras.Model):
 
 
     def train_step(self, data):
+        # Normalize data between -1/1
         # inspirerat av https://github.com/softmatterlab/DeepTrack-2.0/blob/develop/deeptrack/models/gans/cgan.py
         # data borde här innehålla en batch av masks (x) or riktiga bilder/raw images (y)
         x_batch, y_batch = data
@@ -35,7 +36,7 @@ class GAN(tf.keras.Model):
         x_batch = tf.reshape(x_batch, (batch_size, 256, 256, 1))    # borde kanske göras utanför?
         y_batch = tf.reshape(y_batch, (batch_size, 256, 256, 1))
         
-        self.generator.trainable = False
+        # self.generator.trainable = False
         generated_images = self.generator(x_batch)    # batch av fake bilder
         generated_images = tf.reshape(generated_images, (batch_size, 256, 256, 1))
         
@@ -45,9 +46,10 @@ class GAN(tf.keras.Model):
             pred_real_images = self.discriminator(layers.concatenate([y_batch, x_batch]))
             pred_fake_images = self.discriminator(layers.concatenate([generated_images, x_batch]))
             
-            d_loss = self.loss_fn_d(pred_real_images, pred_fake_images)
+            d_loss = self.loss_fn_d(pred_real_images, pred_fake_images) # mse change
 
-   
+        
+        self.generator.trainable = False    # check
         gradients = tape.gradient(d_loss, self.discriminator.trainable_weights)
         self.d_optimizer.apply_gradients(
             zip(gradients, self.discriminator.trainable_weights)
@@ -56,6 +58,7 @@ class GAN(tf.keras.Model):
         # train generator
         self.generator.trainable = True
         self.discriminator.trainable = False
+        
         with tf.GradientTape() as tape:
             output_images = self.generator(x_batch)
             pred_fake_images = self.discriminator(layers.concatenate([output_images, x_batch]))
@@ -65,7 +68,7 @@ class GAN(tf.keras.Model):
             raw_reshaped = raw_reshaped / 1.0
             out_img_reshaped = raw_reshaped / 1.0
 
-            g_loss = self.loss_fn_g(raw_reshaped, out_img_reshaped, pred_fake_images)
+            g_loss = self.loss_fn_g(raw_reshaped, out_img_reshaped, pred_fake_images)   # mae between first 2, mse CHaNGE
  
         gradients = tape.gradient(g_loss, self.generator.trainable_weights)
         self.g_optimizer.apply_gradients(
@@ -110,7 +113,7 @@ class GAN(tf.keras.Model):
             x = layers.Conv2D(n_filters, kernel_size=3, strides=1, padding='same', activation='relu')(x)
 
 
-        output = layers.Conv2D(1, kernel_size=1, padding="same", activation = "tanh")(x) #check activation here
+        output = layers.Conv2D(1, kernel_size=1, padding="same", activation = "tanh")(x) #check activation here 
         
         model = tf.keras.Model(input, output)
         return model
@@ -138,8 +141,9 @@ class GAN(tf.keras.Model):
             layers.Conv2D(512, kernel_size=(4,4), strides=2, padding='same'),
             tfa.layers.InstanceNormalization(),
             layers.LeakyReLU(),
+            #layers.Conv2D(1, kernel_size=(4,4) )
             layers.Flatten(),       # la till detta eftersom de hade det i deeptrack modellen, ger nu 1 tal som output
-            layers.Dense(1, activation='sigmoid') # Ska denna finnas? Fattar ej.
+            layers.Dense(1, activation='sigmoid')  # return a matrix with a 1-filter conv2d. Linear activation
         ])
         return discriminator
 

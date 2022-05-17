@@ -2,4 +2,5 @@ test.py
 label_images.npy
 raw_images.npy
 *.pyc
-*.DS_Store
+.DS_Store
+__pycache__/

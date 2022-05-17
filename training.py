@@ -31,7 +31,6 @@ def test_GAN(model, x, y, ind):
     
 
 
-
 def loss_fn_gen(z_label, z_output, pred_fake):
     gamma = 0.8
     mean_abs_err = tf.keras.losses.mean_absolute_error(z_label, z_output)
@@ -45,8 +44,8 @@ def loss_fn_disc(pred_real, pred_fake):
 if __name__ == '__main__':
     gan = GAN()
     gan.compile(
-    d_optimizer=tf.keras.optimizers.Adam(learning_rate=0.0003, beta_1=0.5),
-    g_optimizer=tf.keras.optimizers.Adam(learning_rate=0.0003, beta_1=0.5),
+    d_optimizer=tf.keras.optimizers.Adam(learning_rate=0.0003, beta_1=0.5), #check with different lr
+    g_optimizer=tf.keras.optimizers.Adam(learning_rate=0.0003, beta_1=0.5), #check with different lr
     loss_fn_g=loss_fn_gen,
     loss_fn_d=loss_fn_disc
     )
@@ -55,10 +54,14 @@ if __name__ == '__main__':
     label_img = np.load('label_images.npy')
     raw_img = np.load('raw_images.npy')
 
+    label_img = label_img/255
+    raw_img = raw_img/255
+
+
     ind = np.random.randint(960)
 
     test_GAN(gan, label_img, raw_img, ind)
-    train_GAN(gan, label_img, raw_img, 96, 100)
+    train_GAN(gan, label_img, raw_img, 10, 10)
     test_GAN(gan, label_img, raw_img, ind)
     print('hello')
     plt.show()
