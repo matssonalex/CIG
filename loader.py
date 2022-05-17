@@ -20,20 +20,20 @@ def loader(nr_of_images, nr_of_cropped, rout, counter, format, matrix):
             matrix[counter, :, :] = np_label
             counter += 1
 # For the labels
-rout = 'cropped_labels/im_'
+rout = 'images/cropped_labels/im_'
 loader(nr_of_images, nr_of_cropped, rout, 0, format, label_matrix)
-rout = 'flipped_labels/flipped_im_'
+rout = 'images/flipped_labels/flipped_im_'
 loader(nr_of_images, nr_of_cropped, rout, 320, format, label_matrix)
-rout = 'noisy_labels/noisy_im_'
+rout = 'images/noisy_labels/noisy_im_'
 loader(nr_of_images, nr_of_cropped, rout, 640, format, label_matrix)
 
 # For the raw files
 format = '.tif'
-rout = 'cropped_raw/im_'
+rout = 'images/cropped_raw/im_'
 loader(nr_of_images, nr_of_cropped, rout, 0, format, raw_matrix)
-rout = 'flipped_raw/flipped_im_'
+rout = 'images/flipped_raw/flipped_im_'
 loader(nr_of_images, nr_of_cropped, rout, 320, format, raw_matrix)
-rout = 'cropped_raw/im_'
+rout = 'images/cropped_raw/im_'
 loader(nr_of_images, nr_of_cropped, rout, 640, format, raw_matrix)
 
 np.save('label_images.npy', label_matrix)
