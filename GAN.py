@@ -48,7 +48,7 @@ class GAN(tf.keras.Model):
             pred_fake_images = self.discriminator(layers.concatenate([generated_images, x_batch]))
             
             d_loss = self.loss_fn_d(pred_real_images, pred_fake_images) # mse change
-
+            # d_loss = self.generator.compiled_loss(pred_real_images, pred_fake_images)
         
         self.generator.trainable = False    # check
         gradients = tape.gradient(d_loss, self.discriminator.trainable_weights)
@@ -71,7 +71,9 @@ class GAN(tf.keras.Model):
             out_img_reshaped = raw_reshaped / 1.0
 
             g_loss = self.loss_fn_g(raw_reshaped, out_img_reshaped, pred_fake_images, pred_real_images)   # mae between first 2, mse CHaNGE
- 
+            # g_loss = self.loss_fn_g([y_batch, generated_images], [pred_fake_images, pred_real_images])
+
+
         gradients = tape.gradient(g_loss, self.generator.trainable_weights)
         self.g_optimizer.apply_gradients(
             zip(gradients, self.generator.trainable_weights)

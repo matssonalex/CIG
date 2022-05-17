@@ -20,13 +20,13 @@ def test_GAN(model, x, y, ind):
     
     plt.figure()
     plt.subplot(1,3,1)
-    plt.imshow(np.reshape(x[ind], (256,256)))
+    plt.imshow(x[ind])
     plt.title('Mask')
     plt.subplot(1,3,2)
     plt.imshow(np.reshape(image, (256,256)))
     plt.title('Generated')
     plt.subplot(1,3,3)
-    plt.imshow(np.reshape(y[ind], (256,256)))
+    plt.imshow(y[ind])
     plt.title('Ground truth')
     
 
@@ -85,7 +85,7 @@ if __name__ == '__main__':
     )
     
     # get training data
-    label_img = np.load('label_images.npy')
+    label_img = np.load('combined_images.npy')
     raw_img = np.load('raw_images.npy')
 
     # label_img = label_img/255
@@ -94,7 +94,7 @@ if __name__ == '__main__':
     norm_label_img, norm_raw_img = preprocess_data(label_img, raw_img)
 
 
-    ind = np.random.randint(960)
+    ind = np.random.randint(320)
 
     test_GAN(gan, norm_label_img, norm_raw_img, ind)
     train_GAN(gan, norm_label_img, norm_raw_img, 10, 10)

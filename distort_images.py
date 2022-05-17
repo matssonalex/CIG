@@ -11,18 +11,23 @@ def flip(image):
     return flipped_image
 
 def noiser(image1, image2):
-    np_image1 = np.asarray(image1)
-    np_image2 = np.asarray(image2)
-    np_image = np_image1 + np_image2
-    row, col = np_image1.shape
-    mean = 0
-    STD = 1
-    var = STD**2
-    gauss = np.random.normal(mean, var, (row, col))
-    gauss = gauss.reshape(row, col)
-    noisy = np_image + gauss
+
+    # np_image1 = np.asarray(image1)
+    # np_image2 = np.asarray(image2)
+    image1.paste(image2, (0,0), image2) #add together
+    np_image = np.asarray(image1)
+    # np_image = np_image1 + np_image2
+    # row, col = np_image.shape
+    # mean = 0
+    # std = 0.01
+    # var = std**2
+    # gauss = np.random.normal(mean, var, (row, col))
+    # gauss = gauss.reshape(row, col)
+    # noisy = np_image + gauss
+    #noisy = 2 * (noisy - min(noisy.flatten())) / (max(noisy.flatten()) - min(noisy.flatten())) - 1
+
     #noisy = np.linalg.norm()
-    noisy = noisy.astype(np.uint8)
+    noisy = np_image.astype(np.uint8)
     noisy_image = Image.fromarray(noisy)
     return noisy_image
 
@@ -34,8 +39,8 @@ for i in range(20):
     else:
         nr = f'{i}'
     for part in range(16):
-        membrane_import = 'images/cropped_membranes/flipped_im_' + nr + '_' + f'{part}' + '.png'
-        mitochondria_import = 'images/cropped_mitochondria/im_' + nr + '_' + f'{part}' + '.tif'
+        membrane_import = 'images/cropped_membranes/im_' + nr + '_' + f'{part}' + '.png'
+        mitochondria_import = 'images/cropped_mitochondria/im_' + nr + '_' + f'{part}' + '.png'
         img_membrane = Image.open(f'{membrane_import}')
         img_mitochondria = Image.open(f'{mitochondria_import}')
         combined_img = noiser(img_membrane, img_mitochondria) # choose distortion function and the dir output below
