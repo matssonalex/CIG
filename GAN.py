@@ -1,4 +1,3 @@
-from pickletools import optimize
 import numpy as np
 import tensorflow as tf
 import tensorflow_addons as tfa
@@ -36,10 +35,12 @@ class GAN(tf.keras.Model):
         x_batch = tf.reshape(x_batch, (batch_size, 256, 256, 1))    # borde kanske göras utanför?
         y_batch = tf.reshape(y_batch, (batch_size, 256, 256, 1))
         
+        self.generator.trainable = False
         generated_images = self.generator(x_batch)    # batch av fake bilder
         generated_images = tf.reshape(generated_images, (batch_size, 256, 256, 1))
         
         # 
+        self.discriminator.trainable = True
         with tf.GradientTape() as tape:     # används för att typ hålla koll på gradients enkelt och träna de som ska tränas.
             pred_real_images = self.discriminator(layers.concatenate([y_batch, x_batch]))
             pred_fake_images = self.discriminator(layers.concatenate([generated_images, x_batch]))
@@ -53,6 +54,8 @@ class GAN(tf.keras.Model):
             )
        
         # train generator
+        self.generator.trainable = True
+        self.discriminator.trainable = False
         with tf.GradientTape() as tape:
             output_images = self.generator(x_batch)
             pred_fake_images = self.discriminator(layers.concatenate([output_images, x_batch]))
