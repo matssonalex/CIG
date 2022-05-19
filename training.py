@@ -39,19 +39,24 @@ def test_GAN(model, x, y, ind):
 #  and the MAE between the predicted image and the ground-truth.
 
 def loss_fn_gen(z_label, z_output, pred_fake, pred_real):
-    # dessa loss funktioner kanske inte är helt korrekta
+    # (dessa loss funktioner kanske inte är helt korrekta) <- Kan fortfarande stämma, men:
+    # Ändrade denna till enklare version utan d_loss som jag tror kan vara korrekt
     gamma = 0.8
-    mean_abs_err = tf.math.reduce_mean(abs(z_label - z_output), axis=1)
-    a = (pred_fake - pred_real)**2
-    a = tf.math.reduce_mean(a, axis=1)
-    a = tf.math.reduce_mean(a, axis=1)
-    b = gamma * tf.reshape(mean_abs_err, (10,1)) + a
+    mean_abs_err = tf.math.reduce_mean(abs(z_label - z_output), axis=0)
+
+    return gamma * mean_abs_err
+    
+    # Nedan räknar ut något medelvärde över patchrader/kolumner, men vi ska bara ha MAE om jag fattat rätt
+    #a = (pred_fake - pred_real)**2          # a.shape: (10, 8, 8, 1)
+    #a = tf.math.reduce_mean(a, axis=1)      # a.shape: (10, 8, 1)
+    #a = tf.math.reduce_mean(a, axis=1)      # a.shape: (10, 1)
+    #b = gamma * tf.reshape(mean_abs_err, (10,1)) + a
     # b = tf.reshape(b, (10,1))
-    return tf.math.reduce_mean(b, axis=1)
+    #return tf.math.reduce_mean(b, axis=1)   # Tar bort extra dim, dvs return: shape(10,)
 
 
 def loss_fn_disc(pred_real, pred_fake):
-    return tf.math.reduce_mean((pred_real - pred_fake)**2, axis=1)
+    return tf.math.reduce_mean((pred_real - pred_fake)**2, axis=0) # Output shape= (8,8,1)
 
 
 def preprocess_data(label_img, raw_img):
