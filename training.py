@@ -42,9 +42,9 @@ def loss_fn_gen(z_label, z_output, pred_fake, pred_real):
     # dessa loss funktioner kanske inte är helt korrekta
     gamma = 0.8
     mean_abs_err = tf.math.reduce_mean(abs(z_label - z_output), axis=1)
-    a = (pred_fake - pred_real)**2
-    a = tf.math.reduce_mean(a, axis=1)
-    a = tf.math.reduce_mean(a, axis=1)
+    a = (pred_fake - pred_real)**2          # a.shape: (10, 8, 8, 1)
+    a = tf.math.reduce_mean(a, axis=1)      # a.shape: (10, 8, 1)
+    a = tf.math.reduce_mean(a, axis=1)      # a.shape: (10, 1)
     b = gamma * tf.reshape(mean_abs_err, (10,1)) + a
     # b = tf.reshape(b, (10,1))
     return tf.math.reduce_mean(b, axis=1)

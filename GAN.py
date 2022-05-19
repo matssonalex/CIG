@@ -141,9 +141,9 @@ class GAN(tf.keras.Model):
             layers.Conv2D(256, kernel_size=(4,4), strides=2, padding='same'),
             tfa.layers.InstanceNormalization(),
             layers.LeakyReLU(),
-            layers.Conv2D(512, kernel_size=(4,4), strides=2, padding='same'),
-            tfa.layers.InstanceNormalization(),
-            layers.LeakyReLU(),
+            #layers.Conv2D(512, kernel_size=(4,4), strides=2, padding='same'),
+            #tfa.layers.InstanceNormalization(),
+            #layers.LeakyReLU(),
             layers.Conv2D(1, kernel_size=(4,4), strides=1, padding='same', activation='linear')
             # layers.Linear()
             # layers.Flatten(),       # la till detta eftersom de hade det i deeptrack modellen, ger nu 1 tal som output
