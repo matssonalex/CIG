@@ -3,7 +3,7 @@ import numpy as np
 from matplotlib import pyplot as plt
 from PIL import Image
 import tensorflow as tf
-import loader   # this will create "label_images.npy" and "raw_images.py"
+#import loader   # this will create "label_images.npy" and "raw_images.py"
 from sklearn.metrics import mean_absolute_error, mean_squared_error
 
 def train_GAN(model, x, y, batch_size, n_epochs):
@@ -84,20 +84,20 @@ if __name__ == '__main__':
     )
     
     # get training data
-    label_img = np.load('combined_images.npy')
-    raw_img = np.load('raw_images.npy')
+    label_img = np.load('combined_matrix.npy')
+    raw_img = np.load('combined_raw_matrix.npy')
 
     # label_img = label_img/255
     # raw_img = raw_img/255
 
-    norm_label_img, norm_raw_img = preprocess_data(label_img, raw_img)
+    # norm_label_img, norm_raw_img = preprocess_data(label_img, raw_img)
 
 
     ind = np.random.randint(320)
 
-    test_GAN(gan, norm_label_img, norm_raw_img, ind)
-    train_GAN(gan, norm_label_img, norm_raw_img, 10, 10)
-    test_GAN(gan, norm_label_img, norm_raw_img, ind)
+    test_GAN(gan, label_img, raw_img, ind)
+    train_GAN(gan, label_img, raw_img, 10, 1)
+    test_GAN(gan, label_img, raw_img, ind)
     print('hello')
     plt.show()
 
