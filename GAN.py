@@ -64,10 +64,10 @@ class GAN(tf.keras.Model):
             pred_real_images = self.discriminator(layers.concatenate([y_batch, x_batch]))
             pred_fake_images = self.discriminator(layers.concatenate([generated_images, x_batch]))
 
-            raw_reshaped = tf.reshape(y_batch, (batch_size, 256*256))
-            out_img_reshaped = tf.reshape(generated_images, (batch_size, 256*256))
-            raw_reshaped = raw_reshaped / 1.0
-            out_img_reshaped = raw_reshaped / 1.0
+            raw_reshaped = tf.reshape(y_batch, (batch_size, 256, 256))
+            out_img_reshaped = tf.reshape(generated_images, (batch_size, 256, 256))
+            #raw_reshaped = raw_reshaped / 1.0          # Dessa tog bort gradients på något vis verkar det som
+            #out_img_reshaped = raw_reshaped / 1.0
 
             g_loss = self.loss_fn_g(raw_reshaped, out_img_reshaped, pred_fake_images, pred_real_images)   # mae between first 2, mse CHaNGE
             # g_loss = self.loss_fn_g([y_batch, generated_images], [pred_fake_images, pred_real_images])
@@ -78,7 +78,9 @@ class GAN(tf.keras.Model):
             zip(gradients, self.generator.trainable_weights)
             )
 
-        return {"d_loss": d_loss, "g_loss": g_loss}
+        return {"d_loss": d_loss, "g_loss": g_loss}     
+        # d_loss.shape=(10,8,1) Borde vara(10,8,8,1)?
+        # g_loss.shape=(10,)    Stämmer? ska väl bara vara mse över outputen?
             
 
     def call(self, input):
