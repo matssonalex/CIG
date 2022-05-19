@@ -27,3 +27,4 @@ RAPPORT
 - Vi har påbörjat bakgrunden, behövs lite om vårt problem och säkert behöver det mesta utvidgas i bakggrunden.
 - Metod kanske man kan skriva en del på, typ vår implementation av generator, discriminator. Att vi hämtat inspiration från deras artikel osv.
 - Kanske påbörja spåna diskussionsämnen, ett är ju hur etiskt det är att utvecklas saker som skapar fake-bilder med deepfakes osv.
+  - Ide för diskussion/test: Skillnad mellan att köra "label"-bilderna, asså 0-255 och bara tre kategorier
