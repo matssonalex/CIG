@@ -95,14 +95,13 @@ if __name__ == '__main__':
     # label_img = label_img/255
     # raw_img = raw_img/255
 
-    # norm_label_img, norm_raw_img = preprocess_data(label_img, raw_img)
-
+    norm_label_img, norm_raw_img = preprocess_data(label_img, raw_img)
 
     ind = np.random.randint(320)
 
-    test_GAN(gan, label_img, raw_img, ind)
-    train_GAN(gan, label_img, raw_img, 10, 1)
-    test_GAN(gan, label_img, raw_img, ind)
+    test_GAN(gan, norm_label_img, norm_raw_img, ind)
+    train_GAN(gan, norm_label_img, norm_raw_img, 10, 1)
+    test_GAN(gan, norm_label_img, norm_raw_img, ind)
     print('hello')
     plt.show()
 
