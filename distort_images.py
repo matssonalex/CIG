@@ -28,7 +28,8 @@ def noise_and_concat(image1, image2):
     if np_image2.dtype == 'bool':
         np_image2 = np_image2.astype(int) # convert to values between (0, 1) from (False, True)
     else:
-        np_image2 = np_image2/np.max(np_image2) # convert to values between (0, 1) from (0, 255)
+        if np_image2.flatten().sum() != 0:
+            np_image2 = np_image2/np.max(np_image2) # convert to values between (0, 1) from (0, 255)
     row, col = np_image2.shape
     mean = 0
     var = 0.1
@@ -87,4 +88,4 @@ for i in range(20):
 #np.save('raw_flip.npy', raw_flip_matrix)
 #np.save('raw_matrix.npy', raw_matrix)
 #np.save('combined_matrix.npy', combined_matrix)
-# np.save('combined_raw_matrix.npy', combined_raw_matrix)
+#np.save('combined_raw_matrix.npy', combined_raw_matrix)
