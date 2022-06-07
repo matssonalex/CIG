@@ -5,6 +5,7 @@ from PIL import Image
 import tensorflow as tf
 #import loader   # this will create "label_images.npy" and "raw_images.py"
 from sklearn.metrics import mean_absolute_error, mean_squared_error
+from distort_images import distort_images
 
 def train_GAN(model, x, y, batch_size, n_epochs):
 #     # hittils endast discriminator som tränas när man kör model.training_step(
