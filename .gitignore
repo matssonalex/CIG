@@ -3,5 +3,3 @@ test.py
 *.pyc
 .DS_Store
 __pycache__/
-*.png
-.DS_Store
